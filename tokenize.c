@@ -4,7 +4,7 @@
 #include <assert.h>
 
 #include "utils.c"
-#include "vect.c"
+#include "strarr.c"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -48,7 +48,7 @@ int read_word(const char *input, char *output) {
 int read_sentence(const char *input, char *output) {
   // Initialize as 1 to ignore the first double quote
   int i = 1;
-  // Copy the characters one at a time, as long as the character isn't a 
+  // Copy the characters one at a time, as long as the character isn't a
   // double quote and we haven't reached the end of the input
   while(input[i] != '\0' && input[i] != '"' && input[i] != '\n') {
     // overwrite buffer (and adjust buffer index to account for i offset)
@@ -59,9 +59,9 @@ int read_sentence(const char *input, char *output) {
   return i + 1;
 }
 
-// Takes a string and decomposes it into a vector of string tokens.
-// char* -> vect_t*
-vect_t *tokenize(char expr[]) {
+// Takes a string and decomposes it into an array of string tokens.
+// char* -> strarr_t*
+strarr_t *tokenize(char expr[]) {
   assert(strlen(expr) < MAX_EXPR_LEN);
 
   // Temporary string buffer; we use this buffer to store words before allocating
@@ -70,7 +70,7 @@ vect_t *tokenize(char expr[]) {
 
   // Allocate memory for the token array. We assume there can be
   // at most 255 unique tokens (each character in the expr string).
-  vect_t *tokens = vect_new();
+  strarr_t *tokens = strarr_new(MAX_EXPR_LEN);
 
   int i = 0;
 
@@ -84,9 +84,9 @@ vect_t *tokenize(char expr[]) {
         char *special = (char *)malloc(2 * sizeof(char));
         special[0] = expr[i];
         special[1] = '\0';
-
-        vect_add(tokens, special);
-        
+        tokens->data[tokens->size] = special;
+        //free(special);
+        ++tokens->size;
         ++i;
       }
       // SUB-CASE 1: whitespace
@@ -104,9 +104,9 @@ vect_t *tokenize(char expr[]) {
         sentence[j] = temp_buffer[j]; // copy over chars to word
       }
       sentence[len] = '\0';
-      
-      vect_add(tokens, sentence);
-
+      tokens->data[tokens->size] = sentence;
+      //free(sentence);
+      ++tokens->size;
       i += len;
     }
     // CASE 3: word
@@ -119,9 +119,9 @@ vect_t *tokenize(char expr[]) {
         word[j] = temp_buffer[j]; // copy over chars to word
       }
       word[len] = '\0';
-      
-      vect_add(tokens, word);
-
+      tokens->data[tokens->size] = word;
+      //free(word);
+      ++tokens->size;
       i += len;
     }
   }
@@ -137,13 +137,13 @@ int main(int argc, char **argv) {
   close(0);
 
   // Takes buffer as expr
-  vect_t *tokens = tokenize(buffer);
+  strarr_t *tokens = tokenize(buffer);
 
   int i = 0;
   while (i < tokens->size) {
     printf("%s\n", tokens->data[i]);
     ++i;
   }
-  free(buffer);
-  vect_delete(tokens);
+
+  strarr_delete(tokens);
 }
