@@ -34,7 +34,7 @@ int read_word(const char *input, char *output) {
   int i = 0;
   // Copy the characters one at a time, as long as the character is non-special
   // and we haven't reached the end of the input
-  while (input[i] != '\0' && !is_special(input[i]) && input[i] != '\n') {
+  while (!is_special(input[i]) && input[i] != '\0' && input[i] != '\n' && input[i] != '"') {
     // overwrite buffer
     output[i] = input[i];
     ++i;
@@ -46,17 +46,16 @@ int read_word(const char *input, char *output) {
 // Read a sequence of characters bounded by double quotes from an input string,
 // and write them to an output buffer (without the double quotes)
 int read_sentence(const char *input, char *output) {
-  // Initialize as 1 to ignore the first double quote
-  int i = 1;
+  int i = 0;
   // Copy the characters one at a time, as long as the character isn't a
   // double quote and we haven't reached the end of the input
   while(input[i] != '\0' && input[i] != '"' && input[i] != '\n') {
-    // overwrite buffer (and adjust buffer index to account for i offset)
-    output[i - 1] = input[i];
+    // overwrite buffer
+    output[i] = input[i];
     ++i;
   }
-  // Return the length of the sentence (plus 1 to skip over the last double quote)
-  return i + 1;
+  // Return the length of the sentence
+  return i;
 }
 
 // Takes a string and decomposes it into an array of string tokens.
@@ -85,7 +84,6 @@ strarr_t *tokenize(char expr[]) {
         special[0] = expr[i];
         special[1] = '\0';
         tokens->data[tokens->size] = special;
-        //free(special);
         ++tokens->size;
         ++i;
       }
@@ -96,33 +94,35 @@ strarr_t *tokenize(char expr[]) {
     } 
     // CASE 2: sentence
     else if (expr[i] == '"') {
-      // Read and write to a temporary buffer
-      int len = read_sentence(&expr[i], temp_buffer);
-      // Allocate some memory for the sentence based on the length
-      char *sentence = (char *)malloc(len * sizeof(char));
+      // Read and write to a temporary buffer (and increment by 1 to skip
+      // over the first double quote)
+      int len = read_sentence(&expr[++i], temp_buffer);
+      // Allocate some memory for the sentence based on the length plus the null terminator
+      char *sentence = (char *)malloc((len + 1) * sizeof(char));
       for (int j = 0; j < len; j++) {
         sentence[j] = temp_buffer[j]; // copy over chars to word
       }
-      sentence[len] = '\0';
-      tokens->data[tokens->size] = sentence;
-      //free(sentence);
-      ++tokens->size;
-      i += len;
+      // Only add to tokens if sentence is not empty 
+      if (len) {
+        sentence[len] = '\0';
+        tokens->data[tokens->size] = sentence;
+        ++tokens->size;
+        i += len + 1; // add 1 to length to skip over the last double quote
+      }
     }
     // CASE 3: word
     else {
       // Read and write to a temporary buffer
       int len = read_word(&expr[i], temp_buffer);
-      // Allocate some memory for the word based on the length
-      char *word = (char *)malloc(len * sizeof(char));
+      // Allocate some memory for the word based on the length plus the null terminator
+      char *word = (char *)malloc((len + 1) * sizeof(char));
       for (int j = 0; j < len; j++) {
         word[j] = temp_buffer[j]; // copy over chars to word
       }
       word[len] = '\0';
       tokens->data[tokens->size] = word;
-      //free(word);
       ++tokens->size;
-      i += len;
+      i += len; 
     }
   }
   return tokens;

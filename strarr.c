@@ -3,16 +3,17 @@
 #include <string.h>
 #include <assert.h>
 
+// String array 
 typedef struct strarr {
   char **data;
   unsigned int size;
   unsigned int capacity;
 } strarr_t;
 
+/** Create a new empty string array with the given capacity */
 strarr_t *strarr_new(unsigned int cap) {
   strarr_t *pa = (strarr_t *) malloc(sizeof(strarr_t));
   assert(pa != NULL);
-
   pa->size = 0;
   pa->capacity = cap;
   pa->data = (char **) malloc(cap * sizeof(char *));
@@ -21,6 +22,7 @@ strarr_t *strarr_new(unsigned int cap) {
   return pa;
 }
 
+/** Delete the string array and free its contents (including itself) */
 void strarr_delete(strarr_t *pa) {
   if (pa == NULL) {
     return;
@@ -36,6 +38,7 @@ void strarr_delete(strarr_t *pa) {
   free(pa);
 }
 
+/** Retrieve the element at the given index */
 const char *strarr_get(strarr_t *pa, unsigned int idx) {
   assert(pa != NULL);
   assert(idx < pa->size);
