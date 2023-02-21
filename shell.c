@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>
 
 #include "parse.h" // TODO fix the h files
 
@@ -17,7 +18,24 @@ const int MAX_EXP_LEN = 255;
 
 // ============================== HELPERS ==============================
 
-
+void cd_command(strarr_t *tokens) {
+  if (tokens->size == 1) {
+    // no arguments, change to home directory
+    if (chdir(getenv("HOME")) == -1) {
+      perror("cd");
+    }
+  }
+  else if (tokens->size == 2) {
+    // one argument, change to specified directory
+    if (chdir(tokens->data[1]) == -1) {
+      perror("cd");
+    }
+  }
+  else {
+    // too many arguments
+    printf("cd: too many arguments\n");
+  }
+}
 
 
 
@@ -25,17 +43,10 @@ const int MAX_EXP_LEN = 255;
 // =============================== MAIN ===============================
 
 int main(int argc, char **argv) {
-
-  // --- SETUP ---  
-
   // input buffer (initialized to the max expression length plus 1  
   // to leave room for the null terminator if the user decides to use
   // all 255 characters)
   char buffer[MAX_EXP_LEN + 1];
-
-
-  // --- CLEANUP ---
-  // strarr_delete(tokens);
 
   
   printf("Welcome to mini-shell.\n");
@@ -66,9 +77,11 @@ int main(int argc, char **argv) {
     int c;
     while ((c = getchar()) != '\n' && c != EOF) {}
 
-    // add a null terminator to the end of the buffer
-    buffer[strlen(buffer) + 1] = '\0';
-
+    // remove trailing whitespace from buffer and add NULL terminator
+    char *end = buffer + strlen(buffer) - 1;
+    while (end > buffer && isspace(*end)) {
+      *end-- = '\0';
+    }
 
     // ------- PROCESS USER INPUT -------
     
@@ -77,9 +90,15 @@ int main(int argc, char **argv) {
       printf("Bye bye.\n");
       break;
     }
-    
+
     // tokenize
     strarr_t *tokens = tokenize(buffer);
+
+    // handle "cd" command
+    if (strcmp(tokens->data[0], "cd") == 0) {
+      cd_command(tokens);
+      continue;
+    }
 
     // launch program with exec
     pid_t pid = fork();
@@ -94,28 +113,19 @@ int main(int argc, char **argv) {
         args[i] = tokens->data[i];
       }
       args[tokens->size] = NULL;
-      execvp(tokens->data[0], args);
-      // if execvp returns, an error occurred
-      perror("execvp");
+      if (execvp(args[0], args) == -1) {
+        printf("%s: command not found\n", args[0]);
+      }
       exit(1);
     }
     else {
       // parent process
       int status;
-      if (waitpid(pid, &status, 0) == -1) {
-        perror("waitpid");
+      if (wait(NULL) == -1) {
+        perror("wait");
         exit(1);
       }
     }
-
-    // int i = 0;
-    // while (i < tokens->size) {
-    //   printf("%s\n", tokens->data[i]);
-    //   ++i;
-    // }
-
-
-
 
     // ------------ CLEANUP -------------
 
