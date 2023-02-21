@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
+#include <sys/wait.h>
 
 #include "parse.h" // TODO fix the h files
 
@@ -97,10 +98,14 @@ int main(int argc, char **argv) {
     // handle "cd" command
     if (strcmp(tokens->data[0], "cd") == 0) {
       cd_command(tokens);
+      // clear the tokens for the next iteration
+      strarr_delete(tokens);
+
+      // clear buffer for next iteration
+      memset(buffer, 0, sizeof(buffer));
       continue;
     }
 
-    // launch program with exec
     pid_t pid = fork();
     if (pid == -1) {
       perror("fork");
@@ -113,27 +118,28 @@ int main(int argc, char **argv) {
         args[i] = tokens->data[i];
       }
       args[tokens->size] = NULL;
+
+
+
+      // launch program with exec
       if (execvp(args[0], args) == -1) {
         printf("%s: command not found\n", args[0]);
       }
+      free(args);
       exit(1);
     }
     else {
       // parent process
-      int status;
-      if (wait(NULL) == -1) {
-        perror("wait");
-        exit(1);
-      }
+      wait(NULL);
     }
 
     // ------------ CLEANUP -------------
 
-    // clear buffer for next iteration
-    memset(buffer, 0, sizeof(buffer));
-
     // clear the tokens for the next iteration
     strarr_delete(tokens);
+
+    // clear buffer for next iteration
+    memset(buffer, 0, sizeof(buffer));
   }
 
 
