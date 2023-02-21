@@ -46,9 +46,13 @@ int main(int argc, char **argv) {
     fflush(stdout);
 
     // wait for user input
-    scanf("%255[^\n]", buffer);
+    if (scanf("%255[^\n]", buffer) != 1) {
+      // no input read, consume newline and restart loop
+      getchar(); 
+      continue;
+    }
 
-    // ignore any remaining characters from stdin (if the user
+    // ignore any remaining characters in stdin (if the user
     // entered more than 255)
     int c;
     while ((c = getchar()) != '\n' && c != EOF) {}
@@ -84,7 +88,6 @@ int main(int argc, char **argv) {
 
     // clear the tokens for the next iteration
     strarr_delete(tokens);
-    
   }
 
 
