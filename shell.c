@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     while ((c = getchar()) != '\n' && c != EOF) {}
 
     // add a null terminator to the end of the buffer
-    buffer[strlen(buffer)] = '\0';
+    buffer[strlen(buffer) + 1] = '\0';
 
 
     // ------- PROCESS USER INPUT -------
@@ -69,8 +69,6 @@ int main(int argc, char **argv) {
       break;
     }
     
-    printf("BUFFER: %s\n", buffer);
-
     // tokenize
     strarr_t *tokens = tokenize(buffer);
     int i = 0;
@@ -79,7 +77,6 @@ int main(int argc, char **argv) {
       ++i;
     }
 
-    printf("NUM TOKENS: %d\n", tokens->size);
 
     // ------------ CLEANUP -------------
 

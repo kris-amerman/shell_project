@@ -48,7 +48,7 @@ int read_sentence(const char *input, char *output) {
   int i = 0;
   // Copy the characters one at a time, as long as the character isn't a
   // double quote and we haven't reached the end of the input
-  while(input[i] != '\0' && input[i] != '"' && input[i] != '\n') {
+  while (input[i] != '"' && input[i] != '\0' && input[i] != '\n') {
     // overwrite buffer
     output[i] = input[i];
     ++i;
@@ -96,21 +96,20 @@ strarr_t *tokenize(char expr[]) {
       // Read and write to a temporary buffer (and increment by 1 to skip
       // over the first double quote)
       int len = read_sentence(&expr[++i], temp_buffer);
-      // Allocate some memory for the sentence based on the length plus the null terminator
-      char *sentence = (char *)malloc((len + 1) * sizeof(char));
-      for (int j = 0; j < len; j++) {
-        sentence[j] = temp_buffer[j]; // copy over chars to word
-      }
+      
       // Only add to tokens if sentence is not empty 
       if (len) {
+        // Allocate some memory for the sentence based on the length plus the null terminator
+        char *sentence = (char *)malloc((len + 1) * sizeof(char));
+        for (int j = 0; j < len; j++) {
+          sentence[j] = temp_buffer[j]; // copy over chars to word
+        }
         sentence[len] = '\0';
         tokens->data[tokens->size] = sentence;
         ++tokens->size;
-        i += len + 1; // add 1 to length to skip over the last double quote
+        i += len;
       }
-      else {
-        ++i;
-      }
+      i++;
     }
     // CASE 3: word
     else {
@@ -148,7 +147,7 @@ strarr_t *tokenize(char expr[]) {
 //     ++i;
 //   }
 
-//   // printf("\nNUM TOKENS: %d\n", tokens->size);
+//   printf("\nNUM TOKENS: %d\n", tokens->size);
 
 //   strarr_delete(tokens);
 
