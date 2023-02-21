@@ -108,6 +108,9 @@ strarr_t *tokenize(char expr[]) {
         ++tokens->size;
         i += len + 1; // add 1 to length to skip over the last double quote
       }
+      else {
+        ++i;
+      }
     }
     // CASE 3: word
     else {
