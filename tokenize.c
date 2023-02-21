@@ -3,7 +3,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "utils.c"
 #include "strarr.c"
 
 #include <sys/types.h>
@@ -128,22 +127,27 @@ strarr_t *tokenize(char expr[]) {
   return tokens;
 }
 
+// =============================== MAIN ==============================
 
-int main(int argc, char **argv) {
+// int main(int argc, char **argv) {
   
-  char buffer[256];
-  int total_bytes = read(0, buffer, 255);  
-  buffer[total_bytes] = '\0';
-  close(0);
+//   char buffer[256];
+//   int total_bytes = read(0, buffer, 255);  
+//   buffer[total_bytes] = '\0';
+//   close(0);
 
-  // Takes buffer as expr
-  strarr_t *tokens = tokenize(buffer);
+//   // Takes buffer as expr
+//   strarr_t *tokens = tokenize(buffer);
 
-  int i = 0;
-  while (i < tokens->size) {
-    printf("%s\n", tokens->data[i]);
-    ++i;
-  }
+//   int i = 0;
+//   while (i < tokens->size) {
+//     printf("%s\n", tokens->data[i]);
+//     ++i;
+//   }
 
-  strarr_delete(tokens);
-}
+//   // printf("\nNUM TOKENS: %d\n", tokens->size);
+
+//   strarr_delete(tokens);
+
+//   return 0;
+// }
