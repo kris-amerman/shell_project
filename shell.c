@@ -38,7 +38,53 @@ void cd_command(strarr_t *tokens) {
   }
 }
 
+// ============================== EXECUTE ==============================
 
+// execute user input and return 0 or 1. 0 denotes that the program should 
+// continue and 1 denotes that the program should exit.
+int execute(strarr_t *tokens, char *buffer) {
+
+  // ========= EXIT =========
+  if (strcmp(buffer, "exit") == 0) {
+    printf("Bye bye.\n");
+    return 1;
+  }
+  
+  // ========= CD =========
+  else if (strcmp(tokens->data[0], "cd") == 0) {
+    cd_command(tokens);
+  }
+
+  // ========= PROGRAM =========
+  else {
+    pid_t pid = fork();
+    if (pid == -1) {
+      perror("fork");
+      exit(1);
+    }
+    else if (pid == 0) {
+      // child process
+      char **args = (char **)malloc(sizeof(char *) * (tokens->size + 1));
+      for (int i = 0; i < tokens->size; i++) {
+        args[i] = tokens->data[i];
+      }
+      args[tokens->size] = NULL;
+
+      // launch program with exec
+      if (execvp(args[0], args) == -1) {
+        printf("%s: command not found\n", args[0]);
+      }
+      free(args);
+      exit(1);
+    }
+    else {
+      // parent process
+      wait(NULL);
+    }
+  }
+
+  return 0;
+}
 
 
 // =============================== MAIN ===============================
@@ -48,12 +94,9 @@ int main(int argc, char **argv) {
   // to leave room for the null terminator if the user decides to use
   // all 255 characters)
   char buffer[MAX_EXP_LEN + 1];
-
-  
   printf("Welcome to mini-shell.\n");
-  while (1) {
-    // ------------- SETUP -------------
 
+  while (1) {
     printf("shell $ ");
     fflush(stdout);
 
@@ -86,52 +129,10 @@ int main(int argc, char **argv) {
 
     // ------- PROCESS USER INPUT -------
     
-    // handle "exit" command
-    if (strcmp(buffer, "exit") == 0) {
-      printf("Bye bye.\n");
-      break;
-    }
-
-    // tokenize
+    // tokenize -- MUST CLEANUP TO CONTINUE!
     strarr_t *tokens = tokenize(buffer);
 
-    // handle "cd" command
-    if (strcmp(tokens->data[0], "cd") == 0) {
-      cd_command(tokens);
-      // clear the tokens for the next iteration
-      strarr_delete(tokens);
-
-      // clear buffer for next iteration
-      memset(buffer, 0, sizeof(buffer));
-      continue;
-    }
-
-    pid_t pid = fork();
-    if (pid == -1) {
-      perror("fork");
-      exit(1);
-    }
-    else if (pid == 0) {
-      // child process
-      char **args = (char **)malloc(sizeof(char *) * (tokens->size + 1));
-      for (int i = 0; i < tokens->size; i++) {
-        args[i] = tokens->data[i];
-      }
-      args[tokens->size] = NULL;
-
-
-
-      // launch program with exec
-      if (execvp(args[0], args) == -1) {
-        printf("%s: command not found\n", args[0]);
-      }
-      free(args);
-      exit(1);
-    }
-    else {
-      // parent process
-      wait(NULL);
-    }
+    int shouldExit = execute(tokens, buffer);
 
     // ------------ CLEANUP -------------
 
@@ -140,9 +141,12 @@ int main(int argc, char **argv) {
 
     // clear buffer for next iteration
     memset(buffer, 0, sizeof(buffer));
+
+    // exit if execute returned status 1
+    if (shouldExit == 1) { 
+      break; 
+    }
   }
-
-
 
   return 0;
 }
