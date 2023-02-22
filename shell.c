@@ -82,17 +82,6 @@ int source_command(strarr_t *tokens) {
   return shouldExit;
 }
 
-// int prev_command(strarr_t *prev_tokens) {
-//   if (prev_tokens == NULL) {
-//     printf("No previous command.\n");
-//     return 0;
-//   } 
-//   else {
-//     // Execute the previous command
-//     return execute(prev_tokens);
-//   }
-// }
-
 
 // ============================== EXECUTE ==============================
 
@@ -119,11 +108,6 @@ int execute(strarr_t *tokens) {
     shouldExit = source_command(tokens);
   }
 
-  // ========= PREV =========
-  // else if (strcmp(tokens->data[0], "prev") == 0) {
-  //   shouldExit = prev_command(prev_tokens);
-  // }
-
   // ========= PROGRAM =========
   else {
     pid_t pid = fork();
@@ -146,9 +130,6 @@ int execute(strarr_t *tokens) {
       // should not get here if command was found
       free(args);
       strarr_delete(tokens);
-      // if (prev_tokens != NULL) {
-      //   strarr_delete(prev_tokens);
-      // }
       exit(1);
     }
     else {
@@ -169,12 +150,15 @@ int main(int argc, char **argv) {
   char buffer[MAX_EXP_LEN + 1];
   
   int shouldExit = 0;
-  // strarr_t *prev_tokens = NULL;
   char prev_buffer[MAX_EXP_LEN + 1];
 
   printf("Welcome to mini-shell.\n");
 
   while (1) {
+    if (shouldExit) {
+      break;
+    }
+    
     printf("shell $ ");
     fflush(stdout);
 
@@ -233,10 +217,6 @@ int main(int argc, char **argv) {
 
     // clear buffer for next iteration
     memset(buffer, 0, sizeof(buffer));
-
-    if (shouldExit) {
-      break;
-    }
   }
 
   return 0;
