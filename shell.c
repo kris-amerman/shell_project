@@ -120,9 +120,9 @@ int execute(strarr_t *tokens, strarr_t *prev_tokens) {
   }
 
   // ========= PREV =========
-  else if (strcmp(tokens->data[0], "prev") == 0) {
-    shouldExit = prev_command(prev_tokens);
-  }
+  // else if (strcmp(tokens->data[0], "prev") == 0) {
+  //   shouldExit = prev_command(prev_tokens);
+  // }
 
   // ========= PROGRAM =========
   else {
@@ -208,6 +208,10 @@ int main(int argc, char **argv) {
     
     // tokenize -- MUST CLEANUP TO CONTINUE!
     strarr_t *tokens = tokenize(buffer);
+
+    if (strcmp(tokens->data[0], "prev") == 0) {
+      tokens = strarr_copy(prev_tokens);
+    }
 
     shouldExit = execute(tokens, prev_tokens);
 
