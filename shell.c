@@ -200,17 +200,14 @@ int main(int argc, char **argv) {
     if (strcmp(tokens->data[0], "prev") == 0) {
       if (strlen(prev_buffer) == 0) {
         printf("No previous command.\n");
+        continue;
       }
-      else {
-        strarr_delete(tokens);
-        tokens = tokenize(prev_buffer);
-	exitStatus = execute(tokens);
-      }
-    }
-    else {
-      exitStatus = execute(tokens);
+      strarr_delete(tokens);
+      tokens = tokenize(prev_buffer);
+    } else {
       strcpy(prev_buffer, buffer);
     }
+    exitStatus = execute(tokens);
 
     // ------------ CLEANUP -------------
 
