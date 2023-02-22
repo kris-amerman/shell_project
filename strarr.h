@@ -85,6 +85,19 @@ void strarr_add(strarr_t *pa, const char *elt) {
   pa->size++;
 }
 
+/** Create a copy of the given string array. The caller is responsible
+ *  for freeing the memory occupied by the copy. */
+strarr_t *strarr_copy(strarr_t *src) {
+  assert(src != NULL);
+  strarr_t *copy = strarr_new(src->capacity);
+  for (unsigned int i = 0; i < src->size; i++) {
+    char *elt_copy = strarr_get_copy(src, i);
+    strarr_add(copy, elt_copy);
+    free(elt_copy);
+  }
+  return copy;
+}
+
 /** Remove the last element from the vector. */
 void strarr_remove_last(strarr_t *pa) {
   assert(pa != NULL);

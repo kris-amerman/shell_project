@@ -21,7 +21,7 @@ const int MAX_EXP_LEN = 255;
 // ============================= PROTOTYPES ============================
 // TODO !! add these to a header file
 
-int execute(strarr_t *tokens);
+int execute(strarr_t *tokens, strarr_t *prev_tokens);
 
 // ============================== HELPERS ==============================
 
@@ -72,7 +72,7 @@ int source_command(strarr_t *tokens) {
 
     // tokenize and execute the line as a command
     strarr_t *line_tokens = tokenize(line);
-    shouldExit = execute(line_tokens);
+    shouldExit = execute(line_tokens, NULL);
     strarr_delete(line_tokens);
   }
 
@@ -82,13 +82,24 @@ int source_command(strarr_t *tokens) {
   return shouldExit;
 }
 
+int prev_command(strarr_t *prev_tokens) {
+  if (prev_tokens == NULL) {
+    printf("No previous command.\n");
+    return 0;
+  } 
+  else {
+    // Execute the previous command
+    return execute(prev_tokens, NULL);
+  }
+}
+
 
 // ============================== EXECUTE ==============================
 
 // execute user input.
 // returns 0 to prompt the program to exit.
 // returns 1 to prompt the program to continue.
-int execute(strarr_t *tokens) {
+int execute(strarr_t *tokens, strarr_t *prev_tokens) {
 
   int shouldExit = 0;
 
@@ -106,6 +117,11 @@ int execute(strarr_t *tokens) {
   // ========= SOURCE =========
   else if (strcmp(tokens->data[0], "source") == 0) {
     shouldExit = source_command(tokens);
+  }
+
+  // ========= PREV =========
+  else if (strcmp(tokens->data[0], "prev") == 0) {
+    shouldExit = prev_command(prev_tokens);
   }
 
   // ========= PROGRAM =========
@@ -146,8 +162,9 @@ int main(int argc, char **argv) {
   // to leave room for the null terminator if the user decides to use
   // all 255 characters)
   char buffer[MAX_EXP_LEN + 1];
-
+  
   int shouldExit = 0;
+  strarr_t *prev_tokens = NULL;
 
   printf("Welcome to mini-shell.\n");
 
@@ -187,7 +204,10 @@ int main(int argc, char **argv) {
     // tokenize -- MUST CLEANUP TO CONTINUE!
     strarr_t *tokens = tokenize(buffer);
 
-    shouldExit = execute(tokens);
+    shouldExit = execute(tokens, prev_tokens);
+
+    strarr_delete(prev_tokens);
+    prev_tokens = strarr_copy(tokens);
 
     // ------------ CLEANUP -------------
 
@@ -200,6 +220,10 @@ int main(int argc, char **argv) {
     if (shouldExit) {
       break;
     }
+  }
+
+  if (prev_tokens != NULL) {
+    strarr_delete(prev_tokens);
   }
 
   return 0;
