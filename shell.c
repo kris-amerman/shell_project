@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
   
   int shouldExit = 0;
   // strarr_t *prev_tokens = NULL;
-  char prev_buffer[MAX_EXP_LEN + 1] = {};
+  char prev_buffer[MAX_EXP_LEN + 1] = "";
 
   printf("Welcome to mini-shell.\n");
 
