@@ -21,7 +21,7 @@ const int MAX_EXP_LEN = 255;
 // ============================= PROTOTYPES ============================
 // TODO !! add these to a header file
 
-void execute(strarr_t *tokens);
+int execute(strarr_t *tokens);
 
 // ============================== HELPERS ==============================
 
@@ -44,19 +44,22 @@ void cd_command(strarr_t *tokens) {
   }
 }
 
-void source_command(strarr_t *tokens) {
+// returns 1 to exit. returns 0 to continue.
+int source_command(strarr_t *tokens) {
   // check that there is exactly one argument
   if (tokens->size != 2) {
     printf("Usage: source <filename>\n");
-    return;
+    return 0;
   }
 
   // open the file for reading
   FILE *file = fopen(tokens->data[1], "r");
   if (file == NULL) {
     perror("fopen");
-    return;
+    return 0;
   }
+
+  int shouldExit = 0;
 
   // read and execute each line of the file
   char line[MAX_EXP_LEN + 1];
@@ -69,28 +72,30 @@ void source_command(strarr_t *tokens) {
 
     // tokenize and execute the line as a command
     strarr_t *line_tokens = tokenize(line);
-    execute(line_tokens);
+    shouldExit = execute(line_tokens);
     strarr_delete(line_tokens);
   }
 
   // close the file
   fclose(file);
+
+  return shouldExit;
 }
 
 
 // ============================== EXECUTE ==============================
 
 // execute user input.
-void execute(strarr_t *tokens) {
+// returns 0 to prompt the program to exit.
+// returns 1 to prompt the program to continue.
+int execute(strarr_t *tokens) {
+
+  int shouldExit = 0;
 
   // ========= EXIT =========
   if (strcmp(tokens->data[0], "exit") == 0) {
-
-    // clear the tokens for the next iteration
-    strarr_delete(tokens);
-
     printf("Bye bye.\n");
-    exit(1);
+    shouldExit = 1;
   }
   
   // ========= CD =========
@@ -100,7 +105,7 @@ void execute(strarr_t *tokens) {
 
   // ========= SOURCE =========
   else if (strcmp(tokens->data[0], "source") == 0) {
-    source_command(tokens);
+    shouldExit = source_command(tokens);
   }
 
   // ========= PROGRAM =========
@@ -130,6 +135,7 @@ void execute(strarr_t *tokens) {
       wait(NULL);
     }
   }
+  return shouldExit;
 }
 
 
@@ -140,6 +146,9 @@ int main(int argc, char **argv) {
   // to leave room for the null terminator if the user decides to use
   // all 255 characters)
   char buffer[MAX_EXP_LEN + 1];
+
+  int shouldExit = 0;
+
   printf("Welcome to mini-shell.\n");
 
   while (1) {
@@ -178,7 +187,7 @@ int main(int argc, char **argv) {
     // tokenize -- MUST CLEANUP TO CONTINUE!
     strarr_t *tokens = tokenize(buffer);
 
-    execute(tokens);
+    shouldExit = execute(tokens);
 
     // ------------ CLEANUP -------------
 
@@ -187,6 +196,10 @@ int main(int argc, char **argv) {
 
     // clear buffer for next iteration
     memset(buffer, 0, sizeof(buffer));
+
+    if (shouldExit) {
+      break;
+    }
   }
 
   return 0;
