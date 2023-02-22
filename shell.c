@@ -63,7 +63,7 @@ int source_command(strarr_t *tokens) {
 
   // read and execute each line of the file
   char line[MAX_EXP_LEN + 1];
-  while (fgets(line, sizeof(line), file) != NULL) {
+  while (exitStatus == 1 && fgets(line, sizeof(line), file) != NULL) {
     // remove trailing newline (if any)
     char *nl = strchr(line, '\n');
     if (nl != NULL) {
@@ -78,7 +78,6 @@ int source_command(strarr_t *tokens) {
 
   // close the file
   fclose(file);
-
   return exitStatus;
 }
 
