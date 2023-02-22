@@ -17,6 +17,12 @@
 
 const int MAX_EXP_LEN = 255;
 
+
+// ============================= PROTOTYPES ============================
+// TODO !! add these to a header file
+
+void execute(strarr_t *tokens);
+
 // ============================== HELPERS ==============================
 
 void cd_command(strarr_t *tokens) {
@@ -38,21 +44,63 @@ void cd_command(strarr_t *tokens) {
   }
 }
 
+void source_command(strarr_t *tokens) {
+  // check that there is exactly one argument
+  if (tokens->size != 2) {
+    printf("Usage: source <filename>\n");
+    return;
+  }
+
+  // open the file for reading
+  FILE *file = fopen(tokens->data[1], "r");
+  if (file == NULL) {
+    perror("fopen");
+    return;
+  }
+
+  // read and execute each line of the file
+  char line[MAX_EXP_LEN + 1];
+  while (fgets(line, sizeof(line), file) != NULL) {
+    // remove trailing newline (if any)
+    char *nl = strchr(line, '\n');
+    if (nl != NULL) {
+      *nl = '\0';
+    }
+
+    // tokenize and execute the line as a command
+    strarr_t *line_tokens = tokenize(line);
+    execute(line_tokens);
+    strarr_delete(line_tokens);
+  }
+
+  // close the file
+  fclose(file);
+}
+
+
 // ============================== EXECUTE ==============================
 
-// execute user input and return 0 or 1. 0 denotes that the program should 
-// continue and 1 denotes that the program should exit.
-int execute(strarr_t *tokens, char *buffer) {
+// execute user input.
+void execute(strarr_t *tokens) {
 
   // ========= EXIT =========
-  if (strcmp(buffer, "exit") == 0) {
+  if (strcmp(tokens->data[0], "exit") == 0) {
+
+    // clear the tokens for the next iteration
+    strarr_delete(tokens);
+
     printf("Bye bye.\n");
-    return 1;
+    exit(1);
   }
   
   // ========= CD =========
   else if (strcmp(tokens->data[0], "cd") == 0) {
     cd_command(tokens);
+  }
+
+  // ========= SOURCE =========
+  else if (strcmp(tokens->data[0], "source") == 0) {
+    source_command(tokens);
   }
 
   // ========= PROGRAM =========
@@ -82,8 +130,6 @@ int execute(strarr_t *tokens, char *buffer) {
       wait(NULL);
     }
   }
-
-  return 0;
 }
 
 
@@ -132,7 +178,7 @@ int main(int argc, char **argv) {
     // tokenize -- MUST CLEANUP TO CONTINUE!
     strarr_t *tokens = tokenize(buffer);
 
-    int shouldExit = execute(tokens, buffer);
+    execute(tokens);
 
     // ------------ CLEANUP -------------
 
@@ -141,11 +187,6 @@ int main(int argc, char **argv) {
 
     // clear buffer for next iteration
     memset(buffer, 0, sizeof(buffer));
-
-    // exit if execute returned status 1
-    if (shouldExit == 1) { 
-      break; 
-    }
   }
 
   return 0;
