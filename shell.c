@@ -206,8 +206,12 @@ int main(int argc, char **argv) {
 
     shouldExit = execute(tokens, prev_tokens);
 
-    strarr_delete(prev_tokens);
-    prev_tokens = strarr_copy(tokens);
+    // only update prev_tokens with the current tokens if
+    // the current tokens were for some command other than prev
+    if (strcmp(tokens->data[0], "prev") != 0) {
+      strarr_delete(prev_tokens);
+      prev_tokens = strarr_copy(tokens);
+    }
 
     // ------------ CLEANUP -------------
 
