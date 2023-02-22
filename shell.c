@@ -149,7 +149,11 @@ int main(int argc, char **argv) {
   char buffer[MAX_EXP_LEN + 1];
   
   int exitStatus = 1;
+
+  // store the previous buffer to redo the previous command
   char prev_buffer[MAX_EXP_LEN + 1];
+  // initialize the entire array to 0  
+  memset(prev_buffer, 0, sizeof(prev_buffer));
 
   printf("Welcome to mini-shell.\n");
 
@@ -200,12 +204,11 @@ int main(int argc, char **argv) {
       else {
         strarr_delete(tokens);
         tokens = tokenize(prev_buffer);
+	exitStatus = execute(tokens);
       }
     }
-
-    exitStatus = execute(tokens);
-
-    if (strcmp(tokens->data[0], "prev") != 0) {
+    else {
+      exitStatus = execute(tokens);
       strcpy(prev_buffer, buffer);
     }
 
