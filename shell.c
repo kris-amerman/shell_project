@@ -44,7 +44,7 @@ void cd_command(strarr_t *tokens) {
   }
 }
 
-// returns 1 to exit. returns 0 to continue.
+// returns 0 to exit. returns 1 to continue.
 int source_command(strarr_t *tokens) {
   // check that there is exactly one argument
   if (tokens->size != 2) {
@@ -59,7 +59,7 @@ int source_command(strarr_t *tokens) {
     return 0;
   }
 
-  int shouldExit = 0;
+  int exitStatus = 1;
 
   // read and execute each line of the file
   char line[MAX_EXP_LEN + 1];
@@ -72,14 +72,14 @@ int source_command(strarr_t *tokens) {
 
     // tokenize and execute the line as a command
     strarr_t *line_tokens = tokenize(line);
-    shouldExit = execute(line_tokens);
+    exitStatus = execute(line_tokens);
     strarr_delete(line_tokens);
   }
 
   // close the file
   fclose(file);
 
-  return shouldExit;
+  return exitStatus;
 }
 
 
@@ -90,12 +90,12 @@ int source_command(strarr_t *tokens) {
 // returns 1 to prompt the program to continue.
 int execute(strarr_t *tokens) {
 
-  int shouldExit = 0;
+  int exitStatus = 1;
 
   // ========= EXIT =========
   if (strcmp(tokens->data[0], "exit") == 0) {
     printf("Bye bye.\n");
-    shouldExit = 1;
+    exitStatus = 0;
   }
   
   // ========= CD =========
@@ -105,7 +105,7 @@ int execute(strarr_t *tokens) {
 
   // ========= SOURCE =========
   else if (strcmp(tokens->data[0], "source") == 0) {
-    shouldExit = source_command(tokens);
+    exitStatus = source_command(tokens);
   }
 
   // ========= PROGRAM =========
@@ -137,7 +137,7 @@ int execute(strarr_t *tokens) {
       wait(NULL);
     }
   }
-  return shouldExit;
+  return exitStatus;
 }
 
 
@@ -149,13 +149,13 @@ int main(int argc, char **argv) {
   // all 255 characters)
   char buffer[MAX_EXP_LEN + 1];
   
-  int shouldExit = 0;
+  int exitStatus = 1;
   char prev_buffer[MAX_EXP_LEN + 1];
 
   printf("Welcome to mini-shell.\n");
 
   while (1) {
-    if (shouldExit) {
+    if (!exitStatus) {
       break;
     }
     
@@ -204,7 +204,7 @@ int main(int argc, char **argv) {
       }
     }
 
-    shouldExit = execute(tokens);
+    exitStatus = execute(tokens);
 
     if (strcmp(tokens->data[0], "prev") != 0) {
       strcpy(prev_buffer, buffer);
