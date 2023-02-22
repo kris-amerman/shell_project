@@ -143,7 +143,12 @@ int execute(strarr_t *tokens, strarr_t *prev_tokens) {
       if (execvp(args[0], args) == -1) {
         printf("%s: command not found\n", args[0]);
       }
+      // should not get here if command was found
       free(args);
+      strarr_delete(tokens);
+      if (prev_tokens != NULL) {
+        strarr_delete(prev_tokens);
+      }
       exit(1);
     }
     else {
