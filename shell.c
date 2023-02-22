@@ -21,7 +21,7 @@ const int MAX_EXP_LEN = 255;
 // ============================= PROTOTYPES ============================
 // TODO !! add these to a header file
 
-int execute(strarr_t *tokens, strarr_t *prev_tokens);
+int execute(strarr_t *tokens);
 
 // ============================== HELPERS ==============================
 
@@ -72,7 +72,7 @@ int source_command(strarr_t *tokens) {
 
     // tokenize and execute the line as a command
     strarr_t *line_tokens = tokenize(line);
-    shouldExit = execute(line_tokens, NULL);
+    shouldExit = execute(line_tokens);
     strarr_delete(line_tokens);
   }
 
@@ -82,16 +82,16 @@ int source_command(strarr_t *tokens) {
   return shouldExit;
 }
 
-int prev_command(strarr_t *prev_tokens) {
-  if (prev_tokens == NULL) {
-    printf("No previous command.\n");
-    return 0;
-  } 
-  else {
-    // Execute the previous command
-    return execute(prev_tokens, NULL);
-  }
-}
+// int prev_command(strarr_t *prev_tokens) {
+//   if (prev_tokens == NULL) {
+//     printf("No previous command.\n");
+//     return 0;
+//   } 
+//   else {
+//     // Execute the previous command
+//     return execute(prev_tokens);
+//   }
+// }
 
 
 // ============================== EXECUTE ==============================
@@ -99,7 +99,7 @@ int prev_command(strarr_t *prev_tokens) {
 // execute user input.
 // returns 0 to prompt the program to exit.
 // returns 1 to prompt the program to continue.
-int execute(strarr_t *tokens, strarr_t *prev_tokens) {
+int execute(strarr_t *tokens) {
 
   int shouldExit = 0;
 
@@ -146,9 +146,9 @@ int execute(strarr_t *tokens, strarr_t *prev_tokens) {
       // should not get here if command was found
       free(args);
       strarr_delete(tokens);
-      if (prev_tokens != NULL) {
-        strarr_delete(prev_tokens);
-      }
+      // if (prev_tokens != NULL) {
+      //   strarr_delete(prev_tokens);
+      // }
       exit(1);
     }
     else {
@@ -169,7 +169,8 @@ int main(int argc, char **argv) {
   char buffer[MAX_EXP_LEN + 1];
   
   int shouldExit = 0;
-  strarr_t *prev_tokens = NULL;
+  // strarr_t *prev_tokens = NULL;
+  char prev_buffer[MAX_EXP_LEN + 1] = {};
 
   printf("Welcome to mini-shell.\n");
 
@@ -210,16 +211,19 @@ int main(int argc, char **argv) {
     strarr_t *tokens = tokenize(buffer);
 
     if (strcmp(tokens->data[0], "prev") == 0) {
-      tokens = strarr_copy(prev_tokens);
+      if (strlen(prev_buffer) == 0) {
+        printf("No previous command.\n");
+      }
+      else {
+        strarr_delete(tokens);
+        tokens = tokenize(prev_buffer);
+      }
     }
 
-    shouldExit = execute(tokens, prev_tokens);
+    shouldExit = execute(tokens);
 
-    // only update prev_tokens with the current tokens if
-    // the current tokens were for some command other than prev
     if (strcmp(tokens->data[0], "prev") != 0) {
-      strarr_delete(prev_tokens);
-      prev_tokens = strarr_copy(tokens);
+      strcpy(prev_buffer, buffer);
     }
 
     // ------------ CLEANUP -------------
@@ -233,10 +237,6 @@ int main(int argc, char **argv) {
     if (shouldExit) {
       break;
     }
-  }
-
-  if (prev_tokens != NULL) {
-    strarr_delete(prev_tokens);
   }
 
   return 0;
