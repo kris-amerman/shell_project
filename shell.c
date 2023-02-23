@@ -140,12 +140,12 @@ int execute(strarr_t *tokens) {
 
       // launch program with exec
       if (execvp(args[0], args) == -1) {
+        // should not get here if command was found
         printf("%s: command not found\n", args[0]);
+        free(args);
+        strarr_delete(tokens);
+        exit(1);
       }
-      // should not get here if command was found
-      free(args);
-      strarr_delete(tokens);
-      exit(1);
     }
     else {
       // parent process
@@ -227,8 +227,8 @@ int main(int argc, char **argv) {
     }
 
     // split the line into sequenced commands and execute in order as long as
-    // the exit status is 1 (exiting in the middle of the sequence should stop
-    // the program)
+    // the exit status is 1 (i.e., exiting in the middle of the sequence 
+    // should stop the program)
     strarr_t *command = strarr_new(tokens->capacity);
     unsigned int i = 0;
     while (i < tokens->size && exitStatus == 1) {
