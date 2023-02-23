@@ -228,22 +228,21 @@ int main(int argc, char **argv) {
     for (int i = 0; i < tokens->size; i++) {
       if (strcmp(tokens->data[i], ";") == 0) {
         // execute the given command
-        // exitStatus = execute(tokens);
-        printf("LAST --- %s\n", command->data[command->size - 1]);
-        fflush(stdout);
+        exitStatus = execute(command);
+
         // reset the command
         strarr_delete(command);
         command = strarr_new(tokens->capacity);
       }
       else {
-        strarr_add(command, strarr_get_copy(tokens, i));
+        strarr_add(command, tokens->data[i]);
       }
     }
 
-    // execute the final command in the sequence
+    // execute the final command in the sequence (if there is one)
     if (command->size > 0) {
-      printf("LAST --- %s\n", command->data[command->size - 1]);
-      fflush(stdout);
+      exitStatus = execute(command);
+      strarr_delete(command);
     }
 
     // ------------ CLEANUP -------------
