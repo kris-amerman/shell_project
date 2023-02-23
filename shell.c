@@ -132,7 +132,11 @@ int execute(strarr_t *tokens) {
         printf("Error trying to open %s\n", fileToken);
         return exitStatus;
       }
-      buffer[length] = '\0';
+      // remove trailing whitespace from buffer and add NULL terminator
+      char *end = buffer + strlen(buffer) - 1;
+      while (end > buffer && isspace(*end)) {
+        *end-- = '\0';
+      }
       strarr_t *args = tokenize(buffer);
 
       for (int k = 0; k < args->size; k++) {
@@ -146,9 +150,6 @@ int execute(strarr_t *tokens) {
       }
     }
   }
-
-
-
 
   // ========= EXIT =========
   if (strcmp(tokens->data[0], "exit") == 0) {
