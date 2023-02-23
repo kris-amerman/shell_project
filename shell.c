@@ -125,6 +125,12 @@ int execute(strarr_t *tokens) {
 
   // ========= PROGRAM =========
   else {
+    char **args = (char **)malloc(sizeof(char *) * (tokens->size + 1));
+    for (int i = 0; i < tokens->size; i++) {
+      args[i] = tokens->data[i];
+    }
+    args[tokens->size] = NULL;
+
     pid_t pid = fork();
     if (pid == -1) {
       perror("fork");
@@ -132,11 +138,6 @@ int execute(strarr_t *tokens) {
     }
     else if (pid == 0) {
       // child process
-      char **args = (char **)malloc(sizeof(char *) * (tokens->size + 1));
-      for (int i = 0; i < tokens->size; i++) {
-        args[i] = tokens->data[i];
-      }
-      args[tokens->size] = NULL;
 
       // launch program with exec
       if (execvp(args[0], args) == -1) {
@@ -150,6 +151,7 @@ int execute(strarr_t *tokens) {
     else {
       // parent process
       wait(NULL);
+      free(args);
     }
   }
   return exitStatus;
