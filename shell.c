@@ -96,6 +96,9 @@ void help_command() {
 // returns 0 to prompt the program to exit.
 // returns 1 to prompt the program to continue.
 int execute(strarr_t *tokens) {
+  if (tokens->size == 0) {
+    return 1;
+  }
 
   int exitStatus = 1;
 
@@ -227,7 +230,7 @@ int main(int argc, char **argv) {
     strarr_t *command = strarr_new(tokens->capacity);
     for (int i = 0; i < tokens->size; i++) {
       if (strcmp(tokens->data[i], ";") == 0) {
-        // execute the given command
+        // execute the command
         exitStatus = execute(command);
 
         // reset the command
@@ -240,12 +243,12 @@ int main(int argc, char **argv) {
     }
 
     // execute the final command in the sequence (if there is one)
-    if (command->size > 0) {
-      exitStatus = execute(command);
-      strarr_delete(command);
-    }
+    exitStatus = execute(command);
 
     // ------------ CLEANUP -------------
+
+    // clear the command
+    strarr_delete(command);
 
     // clear the tokens for the next iteration
     strarr_delete(tokens);
