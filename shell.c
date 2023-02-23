@@ -102,6 +102,58 @@ int execute(strarr_t *tokens) {
 
   int exitStatus = 1;
 
+  // ====== INPUT REDIRECTION ======
+  for (int i = 0; i < tokens->size; i++) {
+    // if we ever encounter "<", we should use the contents of the file
+    // as args to tokens->data[0]
+    if (strcmp(tokens->data[i], "<") == 0) {
+      // file token is index of "<" plus one; if no file is given, error
+      if (i == tokens->size - 1) {
+        printf("Input redirection expectes a file.\n");
+        return exitStatus;
+      }
+      char *fileToken = strarr_get_copy(tokens, i + 1);
+      // delete everything in tokens except first argument
+      unsigned int j = i + 1;
+      while (j > 0) {
+        strarr_remove_last(tokens);
+        j--;
+      }
+
+      // open the file for reading
+      int fd = open(fileToken, O_RDONLY);
+      if (fd == -1) {
+        printf("Error trying to open %s\n", fileToken);
+        return exitStatus;
+      }
+      char buffer[MAX_EXP_LEN + 1];
+      int length = read(fd, buffer, MAX_EXP_LEN);
+      if (length == -1) {
+        printf("Error trying to open %s\n", fileToken);
+        return exitStatus;
+      }
+      buffer[length] = '\0';
+      strarr_t *args = tokenize(buffer);
+
+      for (int k = 0; k < args->size; k++) {
+        strarr_add(tokens, strarr_get_copy(args, k));
+      }
+      strarr_delete(args);
+
+      for (int k = 0; k < tokens->size; k++) {
+        printf("TOKEN: %s\n", tokens->data[k]);
+      }
+
+      if (close(fd) == -1) {
+        printf("Error trying to close %s\n", fileToken);
+        return exitStatus;
+      }
+    }
+  }
+
+
+
+
   // ========= EXIT =========
   if (strcmp(tokens->data[0], "exit") == 0) {
     printf("Bye bye.\n");
@@ -131,7 +183,7 @@ int execute(strarr_t *tokens) {
       exit(1);
     }
     else if (pid == 0) {
-      // child process
+      // child process (copy args to avoid unexpected behavior)
       char **args = (char **)malloc(sizeof(char *) * (tokens->size + 1));
       for (int i = 0; i < tokens->size; i++) {
         args[i] = strarr_get_copy(tokens, i);
@@ -146,6 +198,8 @@ int execute(strarr_t *tokens) {
         for (int i = 0; i < tokens->size; i++) {
             free(args[i]);
         }
+
+        // free args
         free(args);
         strarr_delete(tokens);
         exit(1);
