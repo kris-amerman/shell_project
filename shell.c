@@ -226,9 +226,12 @@ int main(int argc, char **argv) {
       strcpy(prev_buffer, buffer);
     }
 
-    // split the line into sequenced commands and execute in order
+    // split the line into sequenced commands and execute in order as long as
+    // the exit status is 1 (exiting in the middle of the sequence should stop
+    // the program)
     strarr_t *command = strarr_new(tokens->capacity);
-    for (int i = 0; i < tokens->size; i++) {
+    unsigned int i = 0;
+    while (i < tokens->size && exitStatus == 1) {
       if (strcmp(tokens->data[i], ";") == 0) {
         // execute the command
         exitStatus = execute(command);
@@ -240,10 +243,14 @@ int main(int argc, char **argv) {
       else {
         strarr_add(command, tokens->data[i]);
       }
+      i++;
     }
 
-    // execute the final command in the sequence (if there is one)
-    exitStatus = execute(command);
+    // execute the final command in the sequence (if one exits and the 
+    // status code is 1)
+    if (exitStatus == 1) {
+      exitStatus = execute(command);
+    }
 
     // ------------ CLEANUP -------------
 
