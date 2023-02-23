@@ -81,6 +81,14 @@ int source_command(strarr_t *tokens) {
   return exitStatus;
 }
 
+void help_command() {
+  printf("\n*** Shell Built-in Commands ***\n\n");
+  printf("  cd [directory]  Change the current working directory.\n");
+  printf("  source [file]   Execute commands from a file in the current shell.\n");
+  printf("  prev            Execute the previous command.\n");
+  printf("  help            Display this help message.\n");
+  printf("  exit            Terminate the shell.\n\n");
+}
 
 // ============================== EXECUTE ==============================
 
@@ -105,6 +113,11 @@ int execute(strarr_t *tokens) {
   // ========= SOURCE =========
   else if (strcmp(tokens->data[0], "source") == 0) {
     exitStatus = source_command(tokens);
+  }
+
+  // ========= HELP =========
+  else if (strcmp(tokens->data[0], "help") == 0) {
+    help_command();
   }
 
   // ========= PROGRAM =========
@@ -194,9 +207,11 @@ int main(int argc, char **argv) {
 
     // ------- PROCESS USER INPUT -------
     
-    // tokenize -- MUST CLEANUP TO CONTINUE!
+    // tokenize 
     strarr_t *tokens = tokenize(buffer);
 
+    // if prev, utilize the prev_buffer, otherwise continue with
+    // the current set of commands in tokens
     if (strcmp(tokens->data[0], "prev") == 0) {
       if (strlen(prev_buffer) == 0) {
         printf("No previous command.\n");
@@ -207,7 +222,29 @@ int main(int argc, char **argv) {
     } else {
       strcpy(prev_buffer, buffer);
     }
-    exitStatus = execute(tokens);
+
+    // split the line into sequenced commands and execute in order
+    strarr_t *command = strarr_new(tokens->capacity);
+    for (int i = 0; i < tokens->size; i++) {
+      if (strcmp(tokens->data[i], ";") == 0) {
+        // execute the given command
+        // exitStatus = execute(tokens);
+        printf("LAST --- %s\n", command->data[command->size - 1]);
+        fflush(stdout);
+        // reset the command
+        strarr_delete(command);
+        command = strarr_new(tokens->capacity);
+      }
+      else {
+        strarr_add(command, strarr_get_copy(tokens, i));
+      }
+    }
+
+    // execute the final command in the sequence
+    if (command->size > 0) {
+      printf("LAST --- %s\n", command->data[command->size - 1]);
+      fflush(stdout);
+    }
 
     // ------------ CLEANUP -------------
 
