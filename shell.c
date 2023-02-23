@@ -125,12 +125,6 @@ int execute(strarr_t *tokens) {
 
   // ========= PROGRAM =========
   else {
-    char **args = (char **)malloc(sizeof(char *) * (tokens->size + 1));
-    for (int i = 0; i < tokens->size; i++) {
-      args[i] = tokens->data[i];
-    }
-    args[tokens->size] = NULL;
-
     pid_t pid = fork();
     if (pid == -1) {
       perror("fork");
@@ -138,11 +132,20 @@ int execute(strarr_t *tokens) {
     }
     else if (pid == 0) {
       // child process
+      char **args = (char **)malloc(sizeof(char *) * (tokens->size + 1));
+      for (int i = 0; i < tokens->size; i++) {
+        args[i] = strarr_get_copy(tokens, i);
+      }
+      args[tokens->size] = NULL;
 
       // launch program with exec
       if (execvp(args[0], args) == -1) {
-        // should not get here if command was found
         printf("%s: command not found\n", args[0]);
+
+        // free memory for each string
+        for (int i = 0; i < tokens->size; i++) {
+            free(args[i]);
+        }
         free(args);
         strarr_delete(tokens);
         exit(1);
@@ -151,7 +154,6 @@ int execute(strarr_t *tokens) {
     else {
       // parent process
       wait(NULL);
-      free(args);
     }
   }
   return exitStatus;
