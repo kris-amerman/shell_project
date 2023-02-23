@@ -140,10 +140,6 @@ int execute(strarr_t *tokens) {
       }
       strarr_delete(args);
 
-      for (int k = 0; k < tokens->size; k++) {
-        printf("TOKEN: %s\n", tokens->data[k]);
-      }
-
       if (close(fd) == -1) {
         printf("Error trying to close %s\n", fileToken);
         return exitStatus;

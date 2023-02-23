@@ -33,7 +33,7 @@ int read_word(const char *input, char *output) {
   int i = 0;
   // Copy the characters one at a time, as long as the character is non-special
   // and we haven't reached the end of the input
-  while (!is_special(input[i]) && input[i] != '\0' && input[i] != '\n' && input[i] != '"') {
+  while (!is_special(input[i]) && input[i] != '\0' && input[i] != '"') {
     // overwrite buffer
     output[i] = input[i];
     ++i;
