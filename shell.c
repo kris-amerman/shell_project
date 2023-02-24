@@ -90,12 +90,12 @@ void help_command() {
   printf("  exit            Terminate the shell.\n\n");
 }
 
+
 // ============================== EXECUTE ==============================
 
-// execute user input.
-// returns 0 to prompt the program to exit.
-// returns 1 to prompt the program to continue.
-int execute(strarr_t *tokens) {
+
+
+int execute_single_command(strarr_t *tokens) {
   if (tokens->size == 0) {
     return 1;
   }
@@ -231,6 +231,24 @@ int execute(strarr_t *tokens) {
       wait(NULL);
     }
   }
+  return exitStatus;
+}
+
+
+// execute user input.
+// returns 0 to prompt the program to exit.
+// returns 1 to prompt the program to continue.
+int execute(strarr_t *tokens) {
+  if (tokens->size == 0) {
+    return 1;
+  }
+
+  int exitStatus = 1;
+
+  // ======== HANDLE PIPES ========
+
+  exitStatus = execute_single_command(tokens);
+  
   return exitStatus;
 }
 
