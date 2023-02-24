@@ -10,6 +10,15 @@ typedef struct strarr {
   unsigned int capacity;
 } strarr_t;
 
+int strarr_index_of(strarr_t *arr, const char *str) {
+  for (unsigned int i = 0; i < arr->size; i++) {
+    if (strcmp(arr->data[i], str) == 0) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 /** Create a new empty string array with the given capacity */
 strarr_t *strarr_new(unsigned int cap) {
   strarr_t *pa = (strarr_t *) malloc(sizeof(strarr_t));
