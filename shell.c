@@ -144,17 +144,10 @@ int execute(strarr_t *tokens) {
          printf("Error trying to close %s\n", fileToken);
          return exitStatus;
        }
-      
-      // for (int k = 0; k < tokens->size; k++) {
-      //   printf("TOKEN: %s\n", tokens->data[k]);
-      // }
 
       free(fileToken);
     }
   }
-
-
-
 
   // ========= EXIT =========
   if (strcmp(tokens->data[0], "exit") == 0) {
@@ -185,7 +178,33 @@ int execute(strarr_t *tokens) {
       exit(1);
     }
     else if (pid == 0) {
-      // child process (copy args to avoid unexpected behavior)
+      // child process 
+
+      // check if > symbol exists in the arguments
+      int fd;
+      int index = strarr_index_of(tokens, ">");
+      if (index != -1 && index < tokens->size - 1) {
+        // open file for writing and truncate if it already exists
+        fd = open(tokens->data[index + 1], O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+        if (fd == -1) {
+            perror("open");
+            exit(1);
+        }
+
+        // redirect stdout to file
+        if (dup2(fd, STDOUT_FILENO) == -1) {
+            perror("dup2");
+            exit(1);
+        }
+
+        // remove arguments after > (including >)
+        int numDelete = tokens->size - index;
+        for (int k = 0; k < numDelete; k++) {
+          strarr_remove_last(tokens);
+        }
+      }
+
+
       char **args = (char **)malloc(sizeof(char *) * (tokens->size + 1));
       for (int i = 0; i < tokens->size; i++) {
         args[i] = strarr_get_copy(tokens, i);
