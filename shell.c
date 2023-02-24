@@ -120,30 +120,30 @@ int execute(strarr_t *tokens) {
         j--;
       }
 
-      // // open the file for reading
-      // int fd = open(fileToken, O_RDONLY);
-      // if (fd == -1) {
-      //   printf("Error trying to open %s\n", fileToken);
-      //   return exitStatus;
-      // }
-      // char buffer[MAX_EXP_LEN + 1];
-      // int length = read(fd, buffer, MAX_EXP_LEN);
-      // if (length == -1) {
-      //   printf("Error trying to open %s\n", fileToken);
-      //   return exitStatus;
-      // }
-      // buffer[length] = '\0';
-      // strarr_t *args = tokenize(buffer);
+       // open the file for reading
+       int fd = open(fileToken, O_RDONLY);
+       if (fd == -1) {
+         printf("Error trying to open %s\n", fileToken);
+         return exitStatus;
+       }
+       char buffer[MAX_EXP_LEN + 1];
+       int length = read(fd, buffer, MAX_EXP_LEN);
+       if (length == -1) {
+         printf("Error trying to open %s\n", fileToken);
+         return exitStatus;
+       }
+       buffer[length] = '\0';
+       strarr_t *args = tokenize(buffer);
 
-      // for (int k = 0; k < args->size; k++) {
-      //   strarr_add(tokens, strarr_get_copy(args, k));
-      // }
-      // strarr_delete(args);
+       for (int k = 0; k < args->size; k++) {
+         strarr_add(tokens, args->data[k]);
+       }
+       strarr_delete(args);
 
-      // if (close(fd) == -1) {
-      //   printf("Error trying to close %s\n", fileToken);
-      //   return exitStatus;
-      // }
+       if (close(fd) == -1) {
+         printf("Error trying to close %s\n", fileToken);
+         return exitStatus;
+       }
       
       // for (int k = 0; k < tokens->size; k++) {
       //   printf("TOKEN: %s\n", tokens->data[k]);
